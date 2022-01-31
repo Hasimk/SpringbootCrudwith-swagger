@@ -4,8 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.pack.dto.UserRegisterDto;
@@ -14,40 +17,36 @@ import com.pack.exception.ResourceNotFoundException;
 import com.pack.repository.UserRegisterRepository;
 import com.pack.service.UserRegisterService;
 
-
 @Service
 public class UserRegisterServiceImpl implements UserRegisterService {
-	
+
 	@Autowired
-	
+
 	UserRegisterRepository userRepository;
-	
-	@Autowired
-	
-	ModelMapper modelmapper;
 
 	@Override
 	public UserRegisterDto getuserByid(Integer userId) {
-		//UserRegisterDto userdto = null;
+		UserRegisterDto userdto = null;
 		if (userId != null && userId > 0) {
-			UserRegisterEntity userlist = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException(" data not found"));
-			return modelmapper.map(userlist, UserRegisterDto.class);
-			//userdto = convertEntityToModel(userlist);
+			UserRegisterEntity userlist = userRepository.findById(userId)
+					.orElseThrow(() -> new ResourceNotFoundException(" data not found"));
+
+			userdto = convertEntityToModel(userlist);
 		} else {
 			throw new ResourceNotFoundException("No data Found");
 		}
 
-		//return userdto;
+		return userdto;
 	}
-	
 
 	@Override
 	public List<UserRegisterDto> getAllUser() {
-		
+
 		List<UserRegisterEntity> userEntityList = userRepository.findAll();
 
 		if (userEntityList != null && !userEntityList.isEmpty()) {
-			return userEntityList.stream().map(UserRegisterServiceImpl::convertEntityToModel).collect(Collectors.toList());
+			return userEntityList.stream().map(UserRegisterServiceImpl::convertEntityToModel)
+					.collect(Collectors.toList());
 		}
 		return new ArrayList<>();
 	}
@@ -64,9 +63,6 @@ public class UserRegisterServiceImpl implements UserRegisterService {
 		return userRegisterDto;
 	}
 
-	
-
-
 	@Override
 	public void updateUser(UserRegisterDto userRegisterDto) {
 		if (userRegisterDto != null) {
@@ -75,27 +71,38 @@ public class UserRegisterServiceImpl implements UserRegisterService {
 		} else {
 			throw new ResourceNotFoundException("Unable to Update Data");
 		}
-		
+
 	}
 
 	@Override
 	public void deleteUser(Integer userId) {
 		if (userId != null && userId > 0) {
-			UserRegisterEntity userlead = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("contract id Not found"));
+			UserRegisterEntity userlead = userRepository.findById(userId)
+					.orElseThrow(() -> new ResourceNotFoundException("contract id Not found"));
 			if (userlead != null && userlead.getId() != null) {
 				userRepository.delete(userlead);
 			}
 		} else {
 			throw new ResourceNotFoundException("Unable to Delete Data");
 		}
-		
-		
+
 	}
 	
-	
-	
+	  public List<UserRegisterEntity> getAllpagenation(Integer pageNo, Integer pageSize, String sortBy)
+	    {
+	        Pageable paging = PageRequest.of(pageNo, pageSize, Sort.by(sortBy));
+	 
+	        Page<UserRegisterEntity> pagedResult = userRepository.findAll(paging);
+	         
+	        if(pagedResult.hasContent()) {
+	            return pagedResult.getContent();
+	        } else {
+	            return new ArrayList<UserRegisterEntity>();
+	        }
+	    }
+
 	private static UserRegisterDto convertEntityToModel(UserRegisterEntity userlist) {
-		UserRegisterDto userdto= new UserRegisterDto();
+		UserRegisterDto userdto = new UserRegisterDto();
 		userdto.setId(userlist.getId());
 		userdto.setFirstName(userlist.getFirstName());
 		userdto.setLastName(userlist.getLastName());
@@ -105,19 +112,17 @@ public class UserRegisterServiceImpl implements UserRegisterService {
 
 		return userdto;
 	}
-	
+
 	private UserRegisterEntity convertModelToEntity(UserRegisterDto userRegisterDto) {
-		UserRegisterEntity userEntity= new UserRegisterEntity();
+		UserRegisterEntity userEntity = new UserRegisterEntity();
 		userEntity.setEmail(userRegisterDto.getEmail());
 		userEntity.setFirstName(userRegisterDto.getFirstName());
 		userEntity.setId(userRegisterDto.getId());
 		userEntity.setLastName(userRegisterDto.getLastName());
 		userEntity.setPassword(userRegisterDto.getPassword());
 		userEntity.setPhoneNumber(userRegisterDto.getPhoneNumber());
-	
-		
+
 		return userEntity;
 	}
-
 
 }

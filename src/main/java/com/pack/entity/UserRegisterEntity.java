@@ -6,12 +6,16 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Data
 @Table(name = "userregister")
-public class UserRegisterEntity {
+@AllArgsConstructor
+@NoArgsConstructor
+public class UserRegisterEntity  {
 	
 	@Id
 	@GeneratedValue (strategy = GenerationType.IDENTITY)
@@ -22,5 +26,5 @@ public class UserRegisterEntity {
 	private String password;
 	private String phoneNumber;
 	
-
+	
 }
